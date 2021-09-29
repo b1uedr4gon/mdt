@@ -247,7 +247,17 @@ AddEventHandler("mdt:submitNewReport", function(data)
 		TriggerEvent("mdt:getReportDetailsById", id, usource)
 		TriggerClientEvent("mdt:sendNotification", usource, "A new report has been submitted.")
 	end)
-
+	
+	exports.oxmysql:fetch('SELECT * FROM `players` WHERE `cid` = ?', {data.char_id}, function(result)
+		cid = result[1].citizenid
+		TriggerEvent('qb-phone:server:sendNewMailToOffline', cid, {
+            sender = author,
+            subject = "Police Fine",
+            message = "need to pay some stuff",
+            button = {}
+        }) 
+	end)
+		
 	for offense, count in pairs(data.charges) do
 		exports.oxmysql:fetch('SELECT * FROM `user_convictions` WHERE `offense` = ? AND `char_id` = ?', {offense, data.char_id}, function(result)
 			if result[1] then
