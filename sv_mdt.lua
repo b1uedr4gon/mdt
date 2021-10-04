@@ -251,10 +251,14 @@ AddEventHandler("mdt:submitNewReport", function(data)
 	exports.oxmysql:fetch('SELECT * FROM `players` WHERE `cid` = ?', {data.char_id}, function(result)
 		cid = result[1].citizenid
 		TriggerEvent('qb-phone:server:sendNewMailToOffline', cid, {
-            sender = author,
+            sender = "Police " .. author,
             subject = "Police Fine",
             message = "need to pay some stuff",
-            button = {}
+			button = {
+                enabled = true,
+                buttonEvent = "qb-drugs:client:setLocation",
+                buttonData = waitingDelivery
+            }
         }) 
 	end)
 		
