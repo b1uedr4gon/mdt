@@ -241,6 +241,8 @@ RegisterServerEvent("mdt:submitNewReport")
 AddEventHandler("mdt:submitNewReport", function(data)
 	local usource = source
 	local author = GetCharacterName(source)
+	local fineAmount = 0
+
 	charges = json.encode(data.charges)
 	data.date = os.date('%m-%d-%Y %H:%M:%S', os.time())
 	exports.oxmysql:insert('INSERT INTO `mdt_reports` (`char_id`, `title`, `incident`, `charges`, `author`, `name`, `date`) VALUES (?, ?, ?, ?, ?, ?, ?)', {data.char_id, data.title, data.incident, charges, author, data.name, data.date,}, function(id)
@@ -248,20 +250,26 @@ AddEventHandler("mdt:submitNewReport", function(data)
 		TriggerClientEvent("mdt:sendNotification", usource, "A new report has been submitted.")
 	end)
 	
+	local messageOutput = ""
+	for offense, count in pairs(data.charges) do
+		exports.oxmysql:fetch('SELECT * FROM `fine_types` WHERE `label` = ?', {offense}, function(result)
+		fineAmount =  fineAmount + result[1].amount -- you need to use a different viarable name
+		messageOutput = messageOutput .. offense .. " : " ..  tostring(result[1].amount) .. "<br />"
+		end)
+	end
+
 	exports.oxmysql:fetch('SELECT * FROM `players` WHERE `cid` = ?', {data.char_id}, function(result)
 		cid = result[1].citizenid
-		TriggerEvent('qb-phone:server:sendNewMailToOffline', cid, {
-            sender = "Police " .. author,
-            subject = "Police Fine",
-            message = "need to pay some stuff",
-			button = {
-                enabled = true,
-                buttonEvent = "qb-drugs:client:setLocation",
-                buttonData = waitingDelivery
-            }
-        }) 
+		TriggerEvent('qb-phone:server:sendMailOffense', cid, {
+            sender = 'Police Department',
+            subject = 'Police Officer '..author,
+            message = 'total fine amount is '.. fineAmount .. "list:  <br /> " ..messageOutput,
+			
+        })
+		local Player = QBCore.Functions.GetPlayer(result[1].id)
+		Player.Functions.RemoveMoney('bank', fineAmount)
 	end)
-		
+
 	for offense, count in pairs(data.charges) do
 		exports.oxmysql:fetch('SELECT * FROM `user_convictions` WHERE `offense` = ? AND `char_id` = ?', {offense, data.char_id}, function(result)
 			if result[1] then
@@ -271,6 +279,13 @@ AddEventHandler("mdt:submitNewReport", function(data)
 			end
 		end)
 	end
+end)
+
+RegisterServerEvent("mdt:playerPay")
+AddEventHandler("mdt:playerPay", function(fines)
+	local Player = QBCore.Functions.GetPlayer(source)
+	Player.Functions.RemoveMoney(fines)
+	print("you paid") 
 end)
 
 RegisterServerEvent("mdt:performReportSearch")
