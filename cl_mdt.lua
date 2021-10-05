@@ -55,7 +55,7 @@ AddEventHandler("mdt:toggleVisibilty", function(reports, warrants, officer, job,
     })
     ToggleGUI()
 end)
-
+-- testing
 RegisterNUICallback("close", function(data, cb)
     local playerPed = PlayerPedId()
     DeleteEntity(tabletObject)
