@@ -249,7 +249,7 @@ AddEventHandler("mdt:submitNewReport", function(data)
 		TriggerEvent("mdt:getReportDetailsById", id, usource)
 		TriggerClientEvent("mdt:sendNotification", usource, "A new report has been submitted.")
 	end)
-	
+
 	local messageOutput = ""
 	for offense, count in pairs(data.charges) do
 		exports.oxmysql:fetch('SELECT * FROM `fine_types` WHERE `label` = ?', {offense}, function(result)
@@ -263,7 +263,7 @@ AddEventHandler("mdt:submitNewReport", function(data)
 		TriggerEvent('qb-phone:server:sendMailOffense', cid, {
             sender = 'Police Department',
             subject = 'Police Officer '..author,
-            message = 'total fine amount is '.. fineAmount .. "list:  <br /> " ..messageOutput,
+            message = 'total fine amount is alot of money '.. fineAmount .. "list:  <br /> " ..messageOutput,
 			
         })
 		local Player = QBCore.Functions.GetPlayer(result[1].id)
